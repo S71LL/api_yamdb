@@ -3,11 +3,12 @@ from reviews.models import Category
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import LimitOffsetPagination
+from .serializers import CategorySerializer
 
 
 class CategotyViewSets(viewsets.ModelViewSet):
     queryset = Category.objects.all()
-    # serializer_class
+    serializer_class = CategorySerializer
     permission_classes = (IsAuthenticatedOrReadOnly, )
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
