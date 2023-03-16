@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 class User(AbstractUser):
     username = models.CharField(
-        'Имя пользователя',
+        'Username',
         max_length=150,
         unique=True,
         blank=False
@@ -17,17 +17,17 @@ class User(AbstractUser):
         blank=False
     )
     first_name = models.CharField(
-        'Имя',
+        'First name',
         max_length=150,
         blank=True
     )
     last_name = models.CharField(
-        'Фамилия',
+        'Last name',
         max_length=150,
         blank=True
     )
     bio = models.TextField(
-        'Биография',
+        'Biography',
         blank=True
     )
 
@@ -37,12 +37,15 @@ class User(AbstractUser):
         USER = 'user', _('User')
 
     role = models.CharField(
-        'Роль',
+        'Role',
         max_length=9,
         choices=UserRoles.choices,
         default=UserRoles.USER
     )
 
     class Meta:
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
+
+    def __str__(self):
+        return f'{self.username} is {self.role}'
