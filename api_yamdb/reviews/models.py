@@ -5,7 +5,7 @@ User = get_user_model()
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True)
 
     class Meta:
