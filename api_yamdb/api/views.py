@@ -6,7 +6,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from .serializers import CategorySerializer
 
 
-class CategotyViewSets(viewsets.ModelViewSet):
+class CategoryViewSets(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAuthenticatedOrReadOnly, )

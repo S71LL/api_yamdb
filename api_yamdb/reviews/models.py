@@ -33,7 +33,7 @@ class Title(models.Model):
 
 
 class Genre(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True)
 
     class Meta:
@@ -77,7 +77,7 @@ class Review(models.Model):
     )
     score = models.IntegerField()
     pub_date = models.DateTimeField(
-        verbose_name='Дата добавления отзыва',
+        verbose_name='Date of adding the review',
         auto_now_add=True,
         db_index=True
     )
