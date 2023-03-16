@@ -1,10 +1,10 @@
 from django.urls import path, include
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 
-router = DefaultRouter()
+router = SimpleRouter()
 
 urlpatterns = [
-    path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain'),
+    path('auth/signup/', sign_up, name='sign_up'),
+    path('auth/token/', token_obtain, name='token_obtain'),
     path('', include(router.urls)),
 ]
