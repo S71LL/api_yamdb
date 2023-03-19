@@ -12,7 +12,7 @@ from users.models import JWTToken
 from .serializers import (
     SignupSerializer, AdminUserSerializer, UserMeSerializer,
     UserTokenSerializer, ReviewSerializer)
-from .permissions import AuthorOrReadOnly
+from .permissions import AuthorOrReadOnly, IsAdmin, IsModerator
 from .core.utils import generate_code
 
 
@@ -21,7 +21,7 @@ User = get_user_model()
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (AuthorOrReadOnly,)
+    permission_classes = (AuthorOrReadOnly, IsAdmin, IsModerator)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
@@ -34,13 +34,15 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """Создание, редактирование и удаление пользователя администратором."""
     serializer_class = AdminUserSerializer
     queryset = User.objects.all()
-    # permission_classes = (AllowAny,)
+    permission_classes = (IsAdmin,)
 
 
 class UserMeViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin,
                     mixins.UpdateModelMixin):
+    """Самостоятельное получение и обновление данных о пользователе."""
     def retrieve(self, request, pk=None):
         user = get_object_or_404(User, username=request.user.username)
         serializer = UserMeSerializer(user)
@@ -59,14 +61,18 @@ class UserMeViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin,
 @api_view(['POST', 'PATCH', 'PUT'])
 @permission_classes(permission_classes=[AllowAny])
 def sign_up(request):
+    """
+    Самостоятельная регистрация новых пользователей и получение кода на почту.
+    """
     if request.method == 'POST':
         serializer = SignupSerializer(data=request.data)
         if serializer.is_valid():
             to_email = serializer.validated_data['email']
             code = generate_code()
-            msg = f'Hello! Please, use this code to register {code}'
+            msg = ('Привет! Воспользуйся, пожалуйста, '
+                   f'этим кодом для регистрации {code}')
             send_mail(
-                subject='Confirmation code',
+                subject='Код для регистрации',
                 message=msg,
                 from_email='example@mail.ru',
                 recipient_list=[to_email],
@@ -86,15 +92,16 @@ def sign_up(request):
                 'email':
                 [
                     'Введен неверный адрес электронной почты. '
-                    'Проверьте данные или зарегистрируйтесь.'
+                    'Проверь данные или зарегистрируйся.'
                 ]
             }
             return Response(data=msg, status=status.HTTP_400_BAD_REQUEST)
         if serializer.is_valid():
             code = generate_code()
-            msg = f'Hello! Please, use this code to get a new token {code}'
+            msg = ('Привет! Воспользуйся, пожалуйста, '
+                   f'этим кодом для получения нового токена {code}')
             send_mail(
-                subject='Confirmation code',
+                subject='Код для получения токена',
                 message=msg,
                 from_email='example@mail.ru',
                 recipient_list=[to_email],
@@ -110,6 +117,7 @@ def sign_up(request):
 @api_view(['POST'])
 @permission_classes(permission_classes=[AllowAny])
 def token_obtain(request):
+    """Получение токена пользователем."""
     if request.method == 'POST':
         username = request.data['username']
         user = get_object_or_404(User, username=username)
