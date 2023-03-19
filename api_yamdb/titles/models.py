@@ -20,4 +20,4 @@ class Review(models.Model):
     )
 
     class Meta:
-        verbos_name = 'review'
+        verbose_name = 'review'
