@@ -23,7 +23,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     # project_apps
     'api.apps.ApiConfig',
-    'titles.apps.ReviewsConfig',
+    'titles.apps.TitlesConfig',
     'users.apps.UsersConfig',
 ]
 
