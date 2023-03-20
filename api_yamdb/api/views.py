@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import LimitOffsetPagination
 
-from reviews.models import Category, Title
+from reviews.models import Category, Title, Genre
 from titles.models import Title
 from .serializers import CategorySerializer, TitleSerializer, ReviewSerializer
 from .permissions import AuthorOrReadOnly
@@ -41,3 +41,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
         serializer.save(author=self.request.user, title=title)
+
+
+class GenreViewSets(viewsets.ModelViewSet):
+    pass
