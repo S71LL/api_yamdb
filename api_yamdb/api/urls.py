@@ -4,11 +4,11 @@ from rest_framework.routers import SimpleRouter
 from .views import (
     ReviewViewSet, UserViewSet, UserMeViewSet, sign_up, token_obtain)
 
-from .views import CategoryViewSets, ReviewViewSet, CommentViewSet
+from .views import ReviewViewSet, CommentViewSet
 
 name = 'api'
 
-router = DefaultRouter()
+router = SimpleRouter()
 
 router.register(r'titles/(?P<title_id>\d+)/rewiews',
                 ReviewViewSet, basename='review')
