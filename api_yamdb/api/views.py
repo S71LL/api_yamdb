@@ -20,7 +20,8 @@ from .serializers import (CategorySerializer,
                           UserMeSerializer,
                           UserTokenSerializer, 
                           ReviewSerializer,
-                          CommentSerializer)
+                          CommentSerializer,
+                          GenreSerializer)
 from .permissions import AuthorOrReadOnly, IsAdmin, IsModerator
 from .core.utils import generate_code
 
@@ -41,7 +42,7 @@ class TitleViewSets(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, )
-    # после написания кастомного юзера надо прописать пермишн
+    permission_classes = (IsAdmin, )
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
@@ -50,7 +51,7 @@ class TitleViewSets(viewsets.ModelViewSet):
 class CategoryViewSets(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAdmin, )
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
@@ -69,6 +70,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
         serializer.save(author=self.request.user, title=title)
+
+
+class GenreViewSets(viewsets.ModelViewSet):
+    serializer_class = GenreSerializer
+    permission_classes = (IsAdmin, )
+    pagination_class = LimitOffsetPagination
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
 
 
 class UserViewSet(viewsets.ModelViewSet):
