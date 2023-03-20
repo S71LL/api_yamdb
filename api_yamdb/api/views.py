@@ -15,10 +15,10 @@ from titles.models import Title, Review, Category
 from users.models import JWTToken
 from .serializers import (CategorySerializer,
                           TitleSerializer,
-                          SignupSerializer, 
-                          AdminUserSerializer, 
+                          SignupSerializer,
+                          AdminUserSerializer,
                           UserMeSerializer,
-                          UserTokenSerializer, 
+                          UserTokenSerializer,
                           ReviewSerializer,
                           CommentSerializer)
 from .permissions import AuthorOrReadOnly, IsAdmin, IsModerator
