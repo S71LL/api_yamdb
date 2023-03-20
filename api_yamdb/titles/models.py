@@ -74,7 +74,7 @@ class Review(models.Model):
     )
 
     class Meta:
-        verbose_name = 'review'
+        verbosee_name = 'review'
 
 
 class Comment(models.Model):
