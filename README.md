@@ -1,2 +1,2 @@
-# api_yamdb
-api_yamdb
+# Совместный проект api_yamdb
+Инструкция по установке api_yamdb

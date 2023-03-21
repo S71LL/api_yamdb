@@ -23,7 +23,7 @@ urlpatterns = [
     path(
         'users/me/',
         UserMeViewSet.as_view(
-            {'get': 'retrieve', 'put': 'update', 'patch': 'update'}),
+            {'get': 'retrieve', 'patch': 'partial_update'}),
         name='user_me'),
     path('', include(router.urls)),
 ]

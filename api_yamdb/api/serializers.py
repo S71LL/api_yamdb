@@ -54,7 +54,9 @@ class UserTokenSerializer(serializers.ModelSerializer):
 
 class AdminUserSerializer(serializers.ModelSerializer):
     def validate(self, data):
-        username = data['username']
+        username = data.get('username')
+        if not username:
+            return data
         prog = re.compile(r'^[\w.@+-]+\Z', re.ASCII)
         result = prog.match(username)
         if not result:
@@ -74,7 +76,9 @@ class AdminUserSerializer(serializers.ModelSerializer):
 
 class UserMeSerializer(serializers.ModelSerializer):
     def validate(self, data):
-        username = data['username']
+        username = data.get('username')
+        if not username:
+            return data
         prog = re.compile(r'^[\w.@+-]+\Z', re.ASCII)
         result = prog.match(username)
         if not result:
