@@ -3,6 +3,7 @@ import re
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from rest_framework.relations import SlugRelatedField
+from django.db.models import Avg
 
 from users.models import User
 from titles.models import Review, Comment, Title, Category, Genre
@@ -16,10 +17,14 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
         fields = '__all__'
+
+    def get_rating(self, obj):
+        return Review.objects.filter(title_id=obj.id).aggregate(Avg('rating'))
 
 
 class GenreSerializer(serializers.ModelSerializer):
