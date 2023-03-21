@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from rest_framework.relations import SlugRelatedField
 
 from users.models import User
-from titles.models import Review, Comment, Title, Category
+from titles.models import Review, Comment, Title, Category, Genre
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -20,6 +20,14 @@ class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = '__all__'
+
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Genre
+        fields = '__all__'
+        read_only_fields = ('name', 'slug')
 
 
 class SignupSerializer(serializers.ModelSerializer):
