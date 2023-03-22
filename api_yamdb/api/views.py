@@ -11,7 +11,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 
-from titles.models import Title, Review, Category
+from titles.models import Title, Review, Category, Genre
 from users.models import JWTToken
 from .serializers import (CategorySerializer,
                           TitleSerializer,
@@ -22,7 +22,10 @@ from .serializers import (CategorySerializer,
                           ReviewSerializer,
                           CommentSerializer,
                           GenreSerializer)
-from .permissions import AuthorOrReadOnly, IsAdmin, IsModerator
+from .permissions import (AuthorOrReadOnly,
+                          IsAdmin,
+                          IsModerator,
+                          IsStaffOrReadOnly)
 from .core.utils import generate_code
 
 
@@ -32,7 +35,9 @@ User = get_user_model()
 class CategoryViewSets(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    permission_classes = (
+        IsAuthenticatedOrReadOnly, IsAdmin,
+    )
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
@@ -41,8 +46,7 @@ class CategoryViewSets(viewsets.ModelViewSet):
 class TitleViewSets(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, )
-    permission_classes = (IsAdmin, )
+    permission_classes = (IsStaffOrReadOnly, )
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
@@ -73,6 +77,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class GenreViewSets(viewsets.ModelViewSet):
+    queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdmin, )
     pagination_class = LimitOffsetPagination
