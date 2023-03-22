@@ -16,8 +16,8 @@ class Category(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField(max_length=200)
-    year = models.IntegerField()
+    name = models.CharField(max_length=200, default='empty')
+    year = models.IntegerField(default=2000)
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,

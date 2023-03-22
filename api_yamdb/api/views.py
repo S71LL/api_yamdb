@@ -85,6 +85,17 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = AdminUserSerializer
     queryset = User.objects.all()
     permission_classes = (IsAdmin,)
+    filter_backends = (SearchFilter,)
+    search_fields = ('username',)
+    lookup_field = 'username'
+    lookup_value_regex = r'[\w.@+-]+'
+
+    def update(self, request, *args, **kwargs):
+        if request.method == 'PUT':
+            msg = {"error": f'Метод {request.method} не доступен.'}
+            return Response(
+                data=msg, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return super().update(request, *args, **kwargs)
 
 
 class UserMeViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin,
@@ -95,31 +106,58 @@ class UserMeViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin,
         serializer = UserMeSerializer(user)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
-    def update(self, request, pk=None):
+    def partial_update(self, request, pk=None):
         user = get_object_or_404(User, username=request.user.username)
-        serializer = UserMeSerializer(instance=user, data=request.data)
+        serializer = UserMeSerializer(
+            instance=user, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save(partial=True)
+            instance = serializer.instance
+            data = serializer.validated_data
+            instance.first_name = data.get('first_name', instance.first_name)
+            instance.last_name = data.get('last_name', instance.last_name)
+            instance.bio = data.get('bio', instance.bio)
+            serializer.save()
             return Response(data=serializer.data, status=status.HTTP_200_OK)
         return Response(
             data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['POST', 'PATCH', 'PUT'])
+@api_view(['POST'])
 @permission_classes(permission_classes=[AllowAny])
 def sign_up(request):
     """
     Самостоятельная регистрация новых пользователей и получение кода на почту.
     """
     if request.method == 'POST':
-        serializer = SignupSerializer(data=request.data)
+        username = request.data.get('username')
+        to_email = request.data.get('email')
+        if not username or not to_email:
+            msg = {
+                'username': ['Поле "username" обязательно для заполнения.'],
+                'email': ['Поле "email" обязательно для заполнения.']
+            }
+            return Response(data=msg, status=status.HTTP_400_BAD_REQUEST)
+        if not User.objects.filter(username=username).exists():
+            serializer = SignupSerializer(data=request.data)
+        else:
+            user = get_object_or_404(User, username=username)
+            serializer = SignupSerializer(instance=user, data=request.data)
+            if user.email != to_email:
+                msg = {
+                    'email':
+                    [
+                        'Введен неверный адрес электронной почты. '
+                        'Проверь данные или зарегистрируйся.'
+                    ]
+                }
+                return Response(data=msg, status=status.HTTP_400_BAD_REQUEST)
         if serializer.is_valid():
             to_email = serializer.validated_data['email']
             code = generate_code()
             msg = ('Привет! Воспользуйся, пожалуйста, '
-                   f'этим кодом для регистрации {code}')
+                   f'этим кодом для получения токена {code}')
             send_mail(
-                subject='Код для регистрации',
+                subject='Код-подтверждение',
                 message=msg,
                 from_email='example@mail.ru',
                 recipient_list=[to_email],
@@ -129,6 +167,7 @@ def sign_up(request):
             return Response(data=serializer.data, status=status.HTTP_200_OK)
         return Response(
             data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    """
     if request.method == 'PATCH' or 'PUT':
         username = request.data['username']
         to_email = request.data['email']
@@ -159,6 +198,7 @@ def sign_up(request):
             return Response(data=serializer.data, status=status.HTTP_200_OK)
         return Response(
             data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        """
 
 
 @api_view(['POST'])
@@ -166,16 +206,21 @@ def sign_up(request):
 def token_obtain(request):
     """Получение токена пользователем."""
     if request.method == 'POST':
-        username = request.data['username']
+        username = request.data.get('username')
+        confirmation_code = request.data.get('confirmation_code')
+        if not username or not confirmation_code:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         user = get_object_or_404(User, username=username)
         serializer = UserTokenSerializer(
             instance=user, data=request.data)
         code = user.confirmation_code
-        if code != request.data['confirmation_code']:
+        if code != confirmation_code:
             msg = {'confirmation_code': 'Введен неверный код =('}
             return Response(data=msg, status=status.HTTP_400_BAD_REQUEST)
         if serializer.is_valid():
             token_pair = RefreshToken.for_user(user)
+            if JWTToken.objects.filter(user=user).exists():
+                JWTToken.objects.filter(user=user).delete()
             JWTToken.objects.create(
                 key=str(token_pair.access_token), user=user)
             user.confirmation_code = ''
