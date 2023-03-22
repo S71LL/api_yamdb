@@ -23,7 +23,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     # project_apps
     'api.apps.ApiConfig',
-    'titles.apps.ReviewsConfig',
+    'titles.apps.TitlesConfig',
     'users.apps.UsersConfig',
 ]
 
@@ -55,6 +55,11 @@ TEMPLATES = [
         },
     },
 ]
+
+# Email backends
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = BASE_DIR / 'static/emails'
 
 WSGI_APPLICATION = 'api_yamdb.wsgi.application'
 
