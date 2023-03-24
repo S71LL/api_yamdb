@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models import Avg, UniqueConstraint
 
 User = get_user_model()
 
@@ -12,12 +13,13 @@ class Category(models.Model):
         verbose_name = 'category'
 
     def __str__(self) -> str:
-        return self.name
+        return self.slug
 
 
 class Title(models.Model):
     name = models.CharField(max_length=200, default='empty')
     year = models.IntegerField(default=2000)
+    rating = models.FloatField(null=True, default=None)
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
@@ -30,6 +32,9 @@ class Title(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    def get_rating(self):
+        return Review.objects.filter(title_id=self.id).aggregate(Avg('score'))
 
 
 class Genre(models.Model):
@@ -82,6 +87,38 @@ class Comment(models.Model):
         User, on_delete=models.CASCADE, related_name='comments')
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name='comments')
+    review = models.ForeignKey(
+        Review, on_delete=models.CASCADE, related_name='comments')
     text = models.TextField()
     created = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True)
+
+
+class ReviewComment(models.Model):
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        related_name='comment',
+        verbose_name='Review'
+    )
+    comment = models.ForeignKey(
+        Comment,
+        on_delete=models.CASCADE,
+        related_name='review',
+        verbose_name='Comment'
+    )
+
+
+class TitleReview(models.Model):
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='title',
+        verbose_name='Review'
+    )
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        related_name='review',
+        verbose_name='Title'
+    )

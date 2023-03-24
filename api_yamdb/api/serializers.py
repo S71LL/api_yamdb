@@ -3,7 +3,6 @@ import re
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from rest_framework.relations import SlugRelatedField
-from django.db.models import Avg
 
 from users.models import User
 from titles.models import Review, Comment, Title, Category, Genre
@@ -17,17 +16,11 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    category = serializers.SlugRelatedField(
-        slug_field='slug', queryset=Category.objects.all()
-    )
-    rating = serializers.SerializerMethodField()
+    category = serializers.SlugRelatedField(read_only=True, slug_field='slug')
 
     class Meta:
         model = Title
         fields = '__all__'
-
-    def get_rating(self, obj):
-        return Review.objects.filter(title_id=obj.id).aggregate(Avg('score'))
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -113,17 +106,20 @@ class UserMeSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(read_only=True,
-                                          slug_field='username')
+    author = SlugRelatedField(read_only=True,
+                              slug_field='username',
+                              default=serializers.CurrentUserDefault())
+    title = SlugRelatedField(read_only=True,
+                             slug_field='name')
 
     class Meta:
         fields = '__all__'
-        read_only_fields = ('author', 'title')
         model = Review
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = SlugRelatedField(read_only=True, slug_field='username')
+    author = SlugRelatedField(read_only=True, slug_field='username',
+                              default=serializers.CurrentUserDefault())
 
     class Meta:
         fields = '__all__'

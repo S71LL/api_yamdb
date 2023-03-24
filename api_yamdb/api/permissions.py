@@ -7,10 +7,15 @@ class AuthorOrReadOnly(permissions.BasePermission):
     редактировать свои оценки произведений.
     """
 
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return request.user.is_authenticated
+
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        return obj.author == request.user and request.user.is_authenticated
+        return obj.author == request.user
 
 
 class IsAdmin(permissions.BasePermission):
@@ -78,3 +83,35 @@ class IsStaffOrReadOnly(permissions.BasePermission):
                 and (request.user.is_superuser
                      or request.user.role == 'admin')
                 )
+
+
+class AuthorAdminModeratorOrRead(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if view.action == 'list' or 'retrive':
+            return True
+        if view.action == 'create':
+            return request.user and request.user.is_authenticated
+        if view.action == 'update' or 'destroy':
+            if request.user.is_authenticated:
+                return (
+                    request.user
+                    and request.user.is_authenticated
+                    and (request.user.is_superuser
+                         or request.user.role == 'admin'
+                         or request.user.role == 'moderator')
+                )
+            return False
+
+    def has_object_permission(self, request, view, obj):
+        if view.action == 'retrive':
+            return True
+        if view.action == 'update' or 'destroy':
+            if request.user.is_authenticated:
+                return (
+                    request.user.is_authenticated
+                    and (request.user.is_superuser
+                         or request.user.role == 'admin'
+                         or request.user.role == 'moderator'
+                         or request.user == obj.author)
+                )
+            return False
