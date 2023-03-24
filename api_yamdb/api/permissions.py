@@ -52,66 +52,49 @@ class IsModerator(permissions.BasePermission):
                 and request.user.role == 'moderator')
 
 
-class IsAdminOrReadOnly(permissions.BasePermission):
-    """
-    Изменения может привносить только Администратор,
-    чтение доступно для всех
-    """
-
+class AdminOrRead(permissions.BasePermission):
     def has_permission(self, request, view):
-        return (
-            request.method == 'GET'
-            or request.user.role == 'admin'
-        )
-
-
-class IsStaffOrReadOnly(permissions.BasePermission):
-    """
-    Доступ на чтение имеют все.
-    На изменение только админ и модератор
-    """
-
-    def has_permission(self, request, view):
-        return (request.method in permissions.SAFE_METHODS
-                or (request.user.is_authenticated
-                    and request.user.role == 'admin')
-                )
-
-    def has_object_permission(self, request, view, obj):
-        return (request.method == 'GET'
-                or request.user.is_authenticated
+        if view.action == 'list':
+            return True
+        if view.action == 'create' or 'destroy':
+            return (
+                request.user.is_authenticated
                 and (request.user.is_superuser
                      or request.user.role == 'admin')
-                )
+            )
+
+    def has_object_permission(self, request, view, obj):
+        if view.action == 'retrieve':
+            return False
+        return (
+            request.user.is_authenticated
+            and (request.user.is_superuser
+                 or request.user.role == 'admin')
+        )
 
 
 class AuthorAdminModeratorOrRead(permissions.BasePermission):
     def has_permission(self, request, view):
-        if view.action == 'list' or 'retrive':
+        if view.action == 'list' or 'retrieve':
             return True
         if view.action == 'create':
-            return request.user and request.user.is_authenticated
+            return request.user.is_authenticated
         if view.action == 'update' or 'destroy':
-            if request.user.is_authenticated:
-                return (
-                    request.user
-                    and request.user.is_authenticated
-                    and (request.user.is_superuser
-                         or request.user.role == 'admin'
-                         or request.user.role == 'moderator')
-                )
-            return False
+            return (
+                request.user.is_authenticated
+                and (request.user.is_superuser
+                     or request.user.role == 'admin'
+                     or request.user.role == 'moderator')
+            )
 
     def has_object_permission(self, request, view, obj):
-        if view.action == 'retrive':
+        if view.action == 'retrieve':
             return True
         if view.action == 'update' or 'destroy':
-            if request.user.is_authenticated:
-                return (
-                    request.user.is_authenticated
-                    and (request.user.is_superuser
-                         or request.user.role == 'admin'
-                         or request.user.role == 'moderator'
-                         or request.user == obj.author)
-                )
-            return False
+            return (
+                request.user.is_authenticated
+                and (request.user.is_superuser
+                     or request.user.role == 'admin'
+                     or request.user.role == 'moderator'
+                     or request.user == obj.author)
+            )

@@ -31,6 +31,7 @@ from .permissions import (AuthorOrReadOnly,
                           IsAdmin,
                           IsModerator,
                           IsStaffOrReadOnly,
+                          AdminOrRead,
                           AuthorAdminModeratorOrRead)
 from .core.utils import generate_code
 
@@ -41,27 +42,31 @@ User = get_user_model()
 class CategoryViewSets(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (
-        IsAuthenticatedOrReadOnly, IsAdmin,
-    )
+    permission_classes = (AdminOrRead,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
+
+    def retrieve(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            msg = {"error": f'Метод {request.method} не доступен.'}
+            return Response(
+                data=msg, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return super().update(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        if request.method == 'PATCH':
+            msg = {"error": f'Метод {request.method} не доступен.'}
+            return Response(
+                data=msg, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return super().update(request, *args, **kwargs)
 
 
 class TitleViewSets(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = (IsStaffOrReadOnly, )
-    pagination_class = LimitOffsetPagination
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
-
-
-class CategoryViewSets(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAdmin, )
+    permission_classes = (AdminOrRead,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
@@ -69,7 +74,7 @@ class CategoryViewSets(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (AuthorOrReadOnly,)
+    permission_classes = (AuthorAdminModeratorOrRead,)
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
@@ -98,10 +103,26 @@ class CommentViewSet(viewsets.ModelViewSet):
 class GenreViewSets(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAdmin, )
+    queryset = Genre.objects.all()
+    permission_classes = (AdminOrRead,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
+
+    def retrieve(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            msg = {"error": f'Метод {request.method} не доступен.'}
+            return Response(
+                data=msg, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return super().update(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        if request.method == 'PATCH':
+            msg = {"error": f'Метод {request.method} не доступен.'}
+            return Response(
+                data=msg, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return super().update(request, *args, **kwargs)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -191,38 +212,6 @@ def sign_up(request):
             return Response(data=serializer.data, status=status.HTTP_200_OK)
         return Response(
             data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    """
-    if request.method == 'PATCH' or 'PUT':
-        username = request.data['username']
-        to_email = request.data['email']
-        user = get_object_or_404(User, username=username)
-        serializer = SignupSerializer(instance=user, data=request.data)
-        if user.email != to_email:
-            msg = {
-                'email':
-                [
-                    'Введен неверный адрес электронной почты. '
-                    'Проверь данные или зарегистрируйся.'
-                ]
-            }
-            return Response(data=msg, status=status.HTTP_400_BAD_REQUEST)
-        if serializer.is_valid():
-            code = generate_code()
-            msg = ('Привет! Воспользуйся, пожалуйста, '
-                   f'этим кодом для получения нового токена {code}')
-            send_mail(
-                subject='Код для получения токена',
-                message=msg,
-                from_email='example@mail.ru',
-                recipient_list=[to_email],
-                fail_silently=False
-            )
-            user.confirmation_code = code
-            serializer.save()
-            return Response(data=serializer.data, status=status.HTTP_200_OK)
-        return Response(
-            data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        """
 
 
 @api_view(['POST'])
