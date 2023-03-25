@@ -6,6 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import LimitOffsetPagination
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
@@ -30,6 +31,7 @@ from .permissions import (AuthorModeratorAdminOrReadOnly,
                           AdminOrRead,
                           AdminOrGetList)
 from .core.utils import generate_code
+from .filters import TitleFilter
 
 
 User = get_user_model()
@@ -64,8 +66,8 @@ class TitleViewSets(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     permission_classes = (AdminOrRead,)
     pagination_class = LimitOffsetPagination
-    filter_backends = (SearchFilter,)
-    filterset_fields = ('genre__slug', 'category__slug', 'name', 'year')
+    filter_backends = (SearchFilter, DjangoFilterBackend)
+    filterset_class = TitleFilter
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

@@ -42,18 +42,6 @@ class IsAdmin(permissions.BasePermission):
         )
 
 
-class IsModerator(permissions.BasePermission):
-    """
-    Модератор (moderator) — те же права, что и у Аутентифицированного
-    пользователя, плюс право удалять и редактировать
-    любые отзывы и комментарии.
-    """
-
-    def has_object_permission(self, request, view, obj):
-        return (request.user.is_authenticated
-                and request.user.role == 'moderator')
-
-
 class AdminOrGetList(permissions.BasePermission):
     def has_permission(self, request, view):
         if view.action == 'list':
@@ -81,7 +69,7 @@ class AdminOrRead(permissions.BasePermission):
             return True
         if view.action == 'retrieve':
             return True
-        if view.action == 'create' or 'update' or 'destroy':
+        if view.action == 'create' or 'destroy' or 'update':
             return (
                 request.user.is_authenticated
                 and (request.user.is_superuser

@@ -50,6 +50,7 @@ class TitleSerializer(serializers.ModelSerializer):
         queryset=Category.objects.all(),
         required=True
     )
+    year = serializers.IntegerField(required=True)
 
     class Meta:
         model = Title
@@ -65,8 +66,8 @@ class TitleSerializer(serializers.ModelSerializer):
         return None
 
     def validate(self, data):
-        if not isinstance(data.get('year'), int):
-            raise ValidationError('Поле "year" должно юыть целым числом.')
+        if not data.get('year'):
+            return data
         if data.get('year') > datetime.now().year:
             raise ValidationError(
                 'Год выпуска произведения не может быть в будущем.')
