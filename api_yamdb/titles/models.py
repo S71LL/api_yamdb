@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.db.models import Avg, UniqueConstraint
+from django.db.models import Avg
 
 User = get_user_model()
 
@@ -83,6 +83,12 @@ class Review(models.Model):
 
     class Meta:
         verbose_name = 'review'
+        constraints = [
+            models.UniqueConstraint(
+                fields=('author', 'title'),
+                name='unique_author_title'
+            )
+        ]
 
 
 class Comment(models.Model):
@@ -93,22 +99,20 @@ class Comment(models.Model):
     review = models.ForeignKey(
         Review, on_delete=models.CASCADE, related_name='comments')
     text = models.TextField()
-    created = models.DateTimeField(
+    pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True)
 
 
-class ReviewComment(models.Model):
+'''class ReviewComment(models.Model):
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
-        related_name='comment',
-        verbose_name='Review'
+        related_name='review'
     )
     comment = models.ForeignKey(
         Comment,
         on_delete=models.CASCADE,
-        related_name='review',
-        verbose_name='Comment'
+        related_name='comment'
     )
 
 
@@ -125,3 +129,4 @@ class TitleReview(models.Model):
         related_name='review',
         verbose_name='Title'
     )
+'''

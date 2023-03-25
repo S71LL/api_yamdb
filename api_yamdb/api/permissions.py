@@ -1,7 +1,7 @@
 from rest_framework import permissions
 
 
-class AuthorOrReadOnly(permissions.BasePermission):
+class AuthorModeratorAdminOrReadOnly(permissions.BasePermission):
     """
     Автор объекта - может редактировать и удалять свои отзывы и комментарии,
     редактировать свои оценки произведений.
@@ -15,7 +15,9 @@ class AuthorOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        return obj.author == request.user
+        return (obj.author == request.user
+                or request.user.role == 'admin'
+                or request.user.role == 'moderator')
 
 
 class IsAdmin(permissions.BasePermission):
@@ -96,7 +98,31 @@ class AdminOrRead(permissions.BasePermission):
         )
 
 
-class AuthorAdminModeratorOrRead(permissions.BasePermission):
+class AdminOrRead(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if view.action == 'list':
+            return True
+        if view.action == 'retrieve':
+            return True
+        if view.action == 'create' or 'update' or 'destroy':
+            return (
+                request.user.is_authenticated
+                and (request.user.is_superuser
+                     or request.user.role == 'admin')
+            )
+
+    def has_object_permission(self, request, view, obj):
+        if view.action == 'retrieve':
+            return True
+        return (
+            request.user.is_authenticated
+            and (request.user.is_superuser
+                 or request.user.role == 'admin')
+        )
+
+
+
+'''class AuthorAdminModeratorOrRead(permissions.BasePermission):
     def has_permission(self, request, view):
         if view.action == 'list' or 'retrieve':
             return True
@@ -121,3 +147,4 @@ class AuthorAdminModeratorOrRead(permissions.BasePermission):
                      or request.user.role == 'moderator'
                      or request.user == obj.author)
             )
+'''

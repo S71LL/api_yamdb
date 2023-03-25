@@ -5,7 +5,9 @@ from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 from django.db.models import Avg
-from rest_framework.relations import SlugRelatedField
+from rest_framework.relations import SlugRelatedField, PrimaryKeyRelatedField
+from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.serializers import HiddenField
 
 from users.models import User
 from titles.models import Review, Comment, Title, Category, Genre, TitleGenre
@@ -158,19 +160,28 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(read_only=True,
                               slug_field='username',
                               default=serializers.CurrentUserDefault())
-    title = SlugRelatedField(read_only=True,
-                             slug_field='name')
+    title = HiddenField(default=None)
+
+    def get_title(self, obj):
+        return self.context['title']
 
     class Meta:
         fields = '__all__'
         model = Review
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Review.objects.all(),
+                fields=('author', 'title')
+            )
+        ]
 
 
 class CommentSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(read_only=True, slug_field='username',
                               default=serializers.CurrentUserDefault())
+    review = PrimaryKeyRelatedField(read_only=True)
+    title = PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         fields = '__all__'
         model = Comment
-        read_only_fields = ('review',)

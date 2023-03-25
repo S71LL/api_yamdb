@@ -15,8 +15,7 @@ from titles.models import (Title,
                            Review,
                            Category,
                            Genre,
-                           ReviewComment,
-                           TitleReview)
+                           Comment)
 from users.models import JWTToken
 from .serializers import (CategorySerializer,
                           TitleSerializer,
@@ -27,7 +26,7 @@ from .serializers import (CategorySerializer,
                           ReviewSerializer,
                           CommentSerializer,
                           GenreSerializer)
-from .permissions import (AuthorOrReadOnly,
+from .permissions import (AuthorModeratorAdminOrReadOnly,
                           IsAdmin,
                           IsModerator,
                           AdminOrRead,
@@ -72,13 +71,14 @@ class TitleViewSets(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = (AuthorAdminModeratorOrRead,)
+    permission_classes = (AuthorModeratorAdminOrReadOnly,)
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
-        return TitleReview.objects.filter(title=title_id)
+        return Review.objects.filter(title=title_id)
 
     def perform_create(self, serializer):
         title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
@@ -87,16 +87,17 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (AuthorOrReadOnly,)
+    permission_classes = (AuthorModeratorAdminOrReadOnly,)
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
         review = self.kwargs.get('review_id')
-        return ReviewComment.objects.filter(review=review)
+        return Comment.objects.filter(review=review)
 
     def perform_create(self, serializer):
         review = get_object_or_404(Review, id=self.kwargs.get('review_id'))
-        serializer.save(author=self.request.user, review=review)
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        serializer.save(author=self.request.user, review=review, title=title)
 
 
 class GenreViewSets(viewsets.ModelViewSet):
