@@ -16,27 +16,6 @@ class Category(models.Model):
         return self.slug
 
 
-class Title(models.Model):
-    name = models.CharField(max_length=200, default='empty')
-    year = models.IntegerField(default=2000)
-    rating = models.FloatField(null=True, default=None)
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='title',
-    )
-
-    class Meta:
-        verbose_name = 'title'
-
-    def __str__(self) -> str:
-        return self.name
-
-    def get_rating(self):
-        return Review.objects.filter(title_id=self.id).aggregate(Avg('score'))
-
-
 class Genre(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True)
@@ -46,6 +25,30 @@ class Genre(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+
+class Title(models.Model):
+    name = models.CharField(max_length=200, default='empty')
+    year = models.IntegerField(default=2000)
+    description = models.TextField(blank=True, default='empty')
+    rating = models.FloatField(null=True, default=None)
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='title',
+    )
+    genre = models.ManyToManyField(Genre, through='TitleGenre')
+
+    class Meta:
+        verbose_name = 'title'
+
+    def __str__(self) -> str:
+        return self.name
+
+    def get_rating(self):
+        return Review.objects.filter(title_id=self.id).aggregate(Avg('score'))
 
 
 class TitleGenre(models.Model):

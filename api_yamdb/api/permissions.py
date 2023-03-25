@@ -52,7 +52,7 @@ class IsModerator(permissions.BasePermission):
                 and request.user.role == 'moderator')
 
 
-class AdminOrRead(permissions.BasePermission):
+class AdminOrGetList(permissions.BasePermission):
     def has_permission(self, request, view):
         if view.action == 'list':
             return True
@@ -66,6 +66,29 @@ class AdminOrRead(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if view.action == 'retrieve':
             return False
+        return (
+            request.user.is_authenticated
+            and (request.user.is_superuser
+                 or request.user.role == 'admin')
+        )
+
+
+class AdminOrRead(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if view.action == 'list':
+            return True
+        if view.action == 'retrieve':
+            return True
+        if view.action == 'create' or 'update' or 'destroy':
+            return (
+                request.user.is_authenticated
+                and (request.user.is_superuser
+                     or request.user.role == 'admin')
+            )
+
+    def has_object_permission(self, request, view, obj):
+        if view.action == 'retrieve':
+            return True
         return (
             request.user.is_authenticated
             and (request.user.is_superuser

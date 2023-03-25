@@ -5,8 +5,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import LimitOffsetPagination
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
@@ -42,7 +42,7 @@ User = get_user_model()
 class CategoryViewSets(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (AdminOrRead,)
+    permission_classes = (AdminOrGetList,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
@@ -68,8 +68,8 @@ class TitleViewSets(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     permission_classes = (AdminOrRead,)
     pagination_class = LimitOffsetPagination
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('genre__slug', 'category__slug', 'name', 'year')
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -104,7 +104,7 @@ class GenreViewSets(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     queryset = Genre.objects.all()
-    permission_classes = (AdminOrRead,)
+    permission_classes = (AdminOrGetList,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
