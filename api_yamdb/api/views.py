@@ -1,9 +1,12 @@
+from datetime import datetime
+
 from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import ValidationError
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.filters import SearchFilter
@@ -11,7 +14,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 
-from titles.models import Title, Review, Category, Genre
+from titles.models import Title, Review, Category, Genre, TitleGenre
 from users.models import JWTToken
 from .serializers import (
     CategorySerializer, TitleSerializer, SignupSerializer,
@@ -19,7 +22,7 @@ from .serializers import (
     ReviewSerializer, CommentSerializer, GenreSerializer)
 from .permissions import (
     AuthorOrReadOnly, IsAdmin, IsModerator, AdminOrRead,
-    AuthorAdminModeratorOrRead)
+    AdminOrGetList, AuthorAdminModeratorOrRead)
 from .core.utils import generate_code
 
 
@@ -29,7 +32,7 @@ User = get_user_model()
 class CategoryViewSets(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (AdminOrRead,)
+    permission_classes = (AdminOrGetList,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
@@ -58,6 +61,47 @@ class TitleViewSets(viewsets.ModelViewSet):
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
 
+    def create(self, request):
+        genres = request.data.get('genre')
+        name = request.data.get('name')
+        year = request.data.get('year')
+        category = request.data.get('category')
+        description = request.data.get('description')
+        if not genres:
+            msg = {'genre': ['Поле "genre" обязательно для заполнения.']}
+            return Response(data=msg, status=status.HTTP_400_BAD_REQUEST)
+        if not name:
+            msg = {'name': ['Поле "name" обязательно для заполнения.']}
+            return Response(data=msg, status=status.HTTP_400_BAD_REQUEST)
+        if not year:
+            msg = {'year': ['Поле "year" обязательно для заполнения.']}
+            return Response(data=msg, status=status.HTTP_400_BAD_REQUEST)
+        if not category:
+            msg = {'category': ['Поле "category" обязательно для заполнения.']}
+            return Response(data=msg, status=status.HTTP_400_BAD_REQUEST)
+        if not isinstance(year, int):
+            msg = {'year': ['Поле "year" должно быть целым числом.']}
+            return Response(data=msg, status=status.HTTP_400_BAD_REQUEST)
+        if year > datetime.now().year:
+            msg = {
+                'year': ['Год выпуска произведения не может быть в будущем.']}
+            return Response(data=msg, status=status.HTTP_400_BAD_REQUEST)
+        if len(name) > 256:
+            msg = {
+                'name': ['Поле "name" не должно быть длиннее 256 символов.']}
+            return Response(data=msg, status=status.HTTP_400_BAD_REQUEST)
+        category_obj = get_object_or_404(Category, slug=category)
+        title = Title.objects.create(
+            name=name,
+            year=year,
+            description=description,
+            category=category_obj)
+        for genre_slug in genres:
+            genre = get_object_or_404(Genre, slug=genre_slug)
+            TitleGenre.objects.create(title=title, genre=genre)
+        serializer = TitleSerializer(title)
+        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
@@ -77,7 +121,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class GenreViewSets(viewsets.ModelViewSet):
     serializer_class = GenreSerializer
     queryset = Genre.objects.all()
-    permission_classes = (AdminOrRead,)
+    permission_classes = (AdminOrGetList,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)

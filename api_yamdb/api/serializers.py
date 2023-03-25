@@ -1,11 +1,14 @@
 import re
+from datetime import datetime
 
 from rest_framework import serializers
+from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
+from django.db.models import Avg
 from rest_framework.relations import SlugRelatedField
 
 from users.models import User
-from titles.models import Review, Comment, Title, Category, Genre
+from titles.models import Review, Comment, Title, Category, Genre, TitleGenre
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -15,19 +18,63 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
 
 
-class TitleSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Title
-        fields = '__all__'
-
-
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
         fields = ('name', 'slug')
 
+
+class GenreField(serializers.Field):
+    def to_internal_value(self, data):
+        lst = []
+        for genre_slug in data:
+            genre = get_object_or_404(Genre, slug=genre_slug)
+            serializer = GenreSerializer(data=genre)
+            if serializer.is_valid():
+                lst.append(serializer.data)
+        return lst
+
+    def to_representation(self, value):
+        return super().to_representation(value)
+
+
+class TitleSerializer(serializers.ModelSerializer):
+    rating = serializers.SerializerMethodField()
+    genre = GenreSerializer(many=True)
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all()
+    )
+
+    class Meta:
+        model = Title
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
+
+    def get_rating(self, obj):
+        return Review.objects.filter(title_id=obj.id).aggregate(Avg('score'))
+
+    def validate(self, data):
+        if not isinstance(data.get('year'), int):
+            raise ValidationError('Поле "year" должно юыть целым числом.')
+        if data.get('year') > datetime.now().year:
+            raise ValidationError(
+                'Год выпуска произведения не может быть в будущем.')
+        return data
+
+
+"""
+    def create(self, validated_data):
+        genres = validated_data.pop('genre')
+        print(genres)
+        title = Title.objects.create(**validated_data)
+        for genre_slug in genres:
+            genre = get_object_or_404(Genre, slug=genre_slug)
+            TitleGenre.objects.create(title=title, genre=genre)
+        return title
+"""
 
 class SignupSerializer(serializers.ModelSerializer):
     def validate(self, data):

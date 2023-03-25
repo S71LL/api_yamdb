@@ -15,29 +15,31 @@ class Category(models.Model):
         return self.name
 
 
-class Title(models.Model):
-    name = models.CharField(max_length=200, default='empty')
-    year = models.IntegerField(default=2000)
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='title',
-    )
-
-    class Meta:
-        verbose_name = 'title'
-
-    def __str__(self) -> str:
-        return self.name
-
-
 class Genre(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True)
 
     class Meta:
         verbose_name = 'genre'
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class Title(models.Model):
+    name = models.CharField(max_length=200, default='empty')
+    year = models.IntegerField(default=2000)
+    description = models.TextField(blank=True, default='empty')
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='title',
+    )
+    genre = models.ManyToManyField(Genre, through='TitleGenre')
+
+    class Meta:
+        verbose_name = 'title'
 
     def __str__(self) -> str:
         return self.name
