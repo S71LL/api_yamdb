@@ -72,7 +72,9 @@ class AdminOrRead(permissions.BasePermission):
     def has_permission(self, request, view):
         if view.action == 'list':
             return True
-        if view.action == 'create' or 'destroy':
+        if view.action == 'retrieve':
+            return True
+        if view.action == 'create' or 'update' or 'destroy':
             return (
                 request.user.is_authenticated
                 and (request.user.is_superuser
