@@ -2,7 +2,6 @@ import re
 from datetime import datetime
 
 from rest_framework import serializers
-from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 from django.db.models import Avg
 from rest_framework.relations import SlugRelatedField, PrimaryKeyRelatedField

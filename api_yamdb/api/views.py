@@ -28,9 +28,8 @@ from .serializers import (CategorySerializer,
                           GenreSerializer)
 from .permissions import (AuthorModeratorAdminOrReadOnly,
                           IsAdmin,
-                          IsModerator,
                           AdminOrRead,
-                          AuthorAdminModeratorOrRead)
+                          AdminOrGetList)
 from .core.utils import generate_code
 
 

@@ -27,7 +27,6 @@ class Genre(models.Model):
         return self.name
 
 
-
 class Title(models.Model):
     name = models.CharField(max_length=200, default='empty')
     year = models.IntegerField(default=2000)
@@ -101,32 +100,3 @@ class Comment(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True)
-
-
-'''class ReviewComment(models.Model):
-    review = models.ForeignKey(
-        Review,
-        on_delete=models.CASCADE,
-        related_name='review'
-    )
-    comment = models.ForeignKey(
-        Comment,
-        on_delete=models.CASCADE,
-        related_name='comment'
-    )
-
-
-class TitleReview(models.Model):
-    title = models.ForeignKey(
-        Title,
-        on_delete=models.CASCADE,
-        related_name='title',
-        verbose_name='Review'
-    )
-    review = models.ForeignKey(
-        Review,
-        on_delete=models.CASCADE,
-        related_name='review',
-        verbose_name='Title'
-    )
-'''
