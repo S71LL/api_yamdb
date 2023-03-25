@@ -24,8 +24,8 @@ from .serializers import (CategorySerializer,
                           GenreSerializer)
 from .permissions import (AuthorOrReadOnly,
                           IsAdmin,
-                          IsModerator,
-                          IsStaffOrReadOnly)
+                          IsStaffOrReadOnly,
+                          IsAdminOrReadOnly)
 from .core.utils import generate_code
 
 
@@ -36,7 +36,7 @@ class CategoryViewSets(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (
-        IsAuthenticatedOrReadOnly, IsAdmin,
+        IsAdminOrReadOnly,
     )
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
@@ -63,7 +63,8 @@ class CategoryViewSets(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (AuthorOrReadOnly, IsAdmin, IsModerator)
+    permission_classes = (
+        IsAuthenticatedOrReadOnly, IsStaffOrReadOnly, )
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):

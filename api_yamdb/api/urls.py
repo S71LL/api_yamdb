@@ -13,15 +13,15 @@ name = 'api'
 
 router = SimpleRouter()
 
-router.register(r'/titles/(?P<title_id>\d+)/rewiews',
+router.register(r'titles/(?P<title_id>\d+)/reviews',
                 ReviewViewSet, basename='review')
 router.register(r'users', UserViewSet)
 router.register(r'titles/(?P<title_id>\d+)'
-                r'/reviews/(?P<review_id>\d+)/comments',
+                r'reviews/(?P<review_id>\d+)/comments',
                 CommentViewSet, basename='comment')
-router.register('categories', CategoryViewSets)
-router.register('genres', GenreViewSets, basename='genres')
-router.register('titles', TitleViewSets, basename='titles')
+router.register(r'categories', CategoryViewSets)
+router.register(r'genres', GenreViewSets, basename='genres')
+router.register(r'titles', TitleViewSets, basename='titles')
 
 urlpatterns = [
     path('auth/signup/', sign_up, name='sign_up'),
