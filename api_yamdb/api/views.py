@@ -30,7 +30,6 @@ from .serializers import (CategorySerializer,
 from .permissions import (AuthorOrReadOnly,
                           IsAdmin,
                           IsModerator,
-                          IsStaffOrReadOnly,
                           AdminOrRead,
                           AuthorAdminModeratorOrRead)
 from .core.utils import generate_code
