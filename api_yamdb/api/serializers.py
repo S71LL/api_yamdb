@@ -5,11 +5,10 @@ from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from django.db.models import Avg
 from rest_framework.relations import SlugRelatedField, PrimaryKeyRelatedField
-from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.serializers import HiddenField
 
 from users.models import User
-from titles.models import Review, Comment, Title, Category, Genre, TitleGenre
+from reviews.models import Review, Comment, Title, Category, Genre, TitleGenre
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -60,8 +59,9 @@ class TitleSerializer(serializers.ModelSerializer):
 
     def get_rating(self, obj):
         if Review.objects.filter(title_id=obj.id).exists():
-            return Review.objects.filter(
+            score = Review.objects.filter(
                 title_id=obj.id).aggregate(Avg('score'))
+            return score['score__avg']
         return None
 
     def validate(self, data):
@@ -167,12 +167,18 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Review
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Review.objects.all(),
-                fields=('author', 'title')
-            )
-        ]
+
+    def validate(self, data):
+        super().validate(data)
+        if self.context['request'].method == 'POST':
+            user = self.context['request'].user
+            title_id = (
+                self.context['request'].parser_context['kwargs']['title_id'])
+            if Review.objects.filter(author=user, title__id=title_id).exists():
+                raise serializers.ValidationError(
+                    'Duplicated review')
+            return data
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
