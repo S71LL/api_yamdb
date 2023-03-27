@@ -24,7 +24,7 @@ from .serializers import (AdminUserSerializer, CategorySerializer,
 User = get_user_model()
 
 
-class CategoryViewSets(viewsets.ModelViewSet):
+class CategoryViewSets(viewsets.ModelViewSet, mixins.RetrieveModelMixin):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (AdminOrGetList,)
@@ -87,7 +87,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, review=review, title=title)
 
 
-class GenreViewSets(viewsets.ModelViewSet):
+class GenreViewSets(viewsets.ModelViewSet, mixins.RetrieveModelMixin):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     queryset = Genre.objects.all()
