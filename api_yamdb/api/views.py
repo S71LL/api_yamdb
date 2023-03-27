@@ -1,40 +1,25 @@
-from rest_framework import viewsets, status, mixins
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
-from rest_framework.filters import SearchFilter
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.pagination import LimitOffsetPagination
-from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-
-from reviews.models import (Title,
-                            Review,
-                            Category,
-                            Genre,
-                            Comment)
+from rest_framework import mixins, status, viewsets
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.filters import SearchFilter
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import JWTToken
-from .serializers import (CategorySerializer,
-                          TitleSerializer,
-                          SignupSerializer,
-                          AdminUserSerializer,
-                          UserMeSerializer,
-                          UserTokenSerializer,
-                          ReviewSerializer,
-                          CommentSerializer,
-                          GenreSerializer)
-from .permissions import (AuthorModeratorAdminOrReadOnly,
-                          IsAdmin,
-                          AdminOrRead,
-                          AdminOrGetList)
+
 from .core.utils import generate_code
 from .filters import TitleFilter
-from .filters import TitleFilter
-
+from .permissions import (AdminOrGetList, AdminOrRead,
+                          AuthorModeratorAdminOrReadOnly, IsAdmin)
+from .serializers import (AdminUserSerializer, CategorySerializer,
+                          CommentSerializer, GenreSerializer, ReviewSerializer,
+                          SignupSerializer, TitleSerializer, UserMeSerializer,
+                          UserTokenSerializer)
 
 User = get_user_model()
 

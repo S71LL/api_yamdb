@@ -1,21 +1,19 @@
 import re
 from datetime import datetime
 
-from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from django.db.models import Avg
-from rest_framework.relations import SlugRelatedField, PrimaryKeyRelatedField
+from rest_framework import serializers
+from rest_framework.relations import PrimaryKeyRelatedField, SlugRelatedField
 from rest_framework.serializers import HiddenField
-
+from reviews.models import Category, Comment, Genre, Review, Title, TitleGenre
 from users.models import User
-from reviews.models import Review, Comment, Title, Category, Genre, TitleGenre
 
 
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ('name', 'slug')
         fields = ('name', 'slug')
 
 
