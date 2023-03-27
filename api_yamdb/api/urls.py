@@ -1,10 +1,9 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
-from .views import (
-    ReviewViewSet, UserViewSet, UserMeViewSet, GenreViewSets,
-    CategoryViewSets, CommentViewSet, TitleViewSets,
-    sign_up, token_obtain)
+from .views import (CategoryViewSets, CommentViewSet, GenreViewSets,
+                    ReviewViewSet, TitleViewSets, UserMeViewSet, UserViewSet,
+                    sign_up, token_obtain)
 
 name = 'api'
 

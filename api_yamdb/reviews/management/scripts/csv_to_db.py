@@ -3,15 +3,13 @@
 данных из *.csv файлов в записи db.sqlite3
 """
 import csv
-import os
 import logging
+import os
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-
-from reviews.models import (
-    Category, Comment, Genre, Review, Title, TitleGenre, User
-)
+from reviews.models import (Category, Comment, Genre, Review, Title,
+                            TitleGenre, User)
 
 DATA_PATH = os.path.join(settings.BASE_DIR, 'static/data')
 
