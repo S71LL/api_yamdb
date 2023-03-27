@@ -1,22 +1,21 @@
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from django.core.mail import send_mail
+from django.contrib.auth import get_user_model
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status, mixins
+from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
 from rest_framework.filters import SearchFilter
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import LimitOffsetPagination
-from django.core.mail import send_mail
-from django.contrib.auth import get_user_model
-from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import (Title,
                             Review,
                             Category,
-                            Genre,
-                            Comment)
+                            Genre)
 from users.models import JWTToken
 from .serializers import (CategorySerializer,
                           TitleSerializer,
@@ -32,7 +31,6 @@ from .permissions import (AuthorModeratorAdminOrReadOnly,
                           AdminOrRead,
                           AdminOrGetList)
 from .core.utils import generate_code
-from .filters import TitleFilter
 from .filters import TitleFilter
 
 
@@ -80,7 +78,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
-        return Review.objects.filter(title=title_id)
+        title = get_object_or_404(Title, id=title_id)
+        return title.reviews.all()
 
     def perform_create(self, serializer):
         title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
@@ -93,8 +92,9 @@ class CommentViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
-        review = self.kwargs.get('review_id')
-        return Comment.objects.filter(review=review)
+        review_id = self.kwargs.get('review_id')
+        review = Review.objects.get(id=review_id)
+        return review.comments.all()
 
     def perform_create(self, serializer):
         review = get_object_or_404(Review, id=self.kwargs.get('review_id'))

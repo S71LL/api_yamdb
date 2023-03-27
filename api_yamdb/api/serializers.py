@@ -16,7 +16,6 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('name', 'slug')
-        fields = ('name', 'slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -59,11 +58,9 @@ class TitleSerializer(serializers.ModelSerializer):
         )
 
     def get_rating(self, obj):
-        if Review.objects.filter(title_id=obj.id).exists():
-            score = Review.objects.filter(
-                title_id=obj.id).aggregate(Avg('score'))
-            return score['score__avg']
-        return None
+        title = Title.objects.get(id=obj.id)
+        score = title.reviews.all().aggregate(Avg('score'))
+        return score['score__avg']
 
     def validate(self, data):
         if not data.get('year'):

@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.db.models import Avg
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 User = get_user_model()
@@ -32,7 +31,6 @@ class Title(models.Model):
     name = models.CharField(max_length=200, default='empty')
     year = models.IntegerField(default=2000)
     description = models.TextField(blank=True, default='empty')
-    rating = models.FloatField(null=True, default=None)
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
@@ -46,9 +44,6 @@ class Title(models.Model):
 
     def __str__(self) -> str:
         return self.name
-
-    def get_rating(self):
-        return Review.objects.filter(title_id=self.id).aggregate(Avg('score'))
 
 
 class TitleGenre(models.Model):
@@ -72,7 +67,7 @@ class TitleGenre(models.Model):
 
 class Review(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='reviews')
+        User, on_delete=models.CASCADE)
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name='reviews')
     text = models.TextField()
