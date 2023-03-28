@@ -53,6 +53,7 @@ class CategoryViewSets(UniversalViewSet):
     search_fields = ('name',)
     lookup_field = 'slug'
 
+
 class TitleViewSets(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
