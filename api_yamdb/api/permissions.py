@@ -1,7 +1,7 @@
 from rest_framework import permissions
 
 
-class ISAuthorModeratorAdminOrReadOnly(permissions.BasePermission):
+class IsAuthorModeratorAdminOrReadOnly(permissions.BasePermission):
     """
     Автор объекта - может редактировать и удалять свои отзывы и комментарии,
     редактировать свои оценки произведений.
