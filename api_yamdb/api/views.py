@@ -11,6 +11,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.mixins import (CreateModelMixin, DestroyModelMixin,
+                                   ListModelMixin)
 
 from reviews.models import (Title,
                             Review,
@@ -37,7 +39,12 @@ from .filters import TitleFilter
 User = get_user_model()
 
 
-class CategoryViewSets(viewsets.ModelViewSet, mixins.RetrieveModelMixin):
+class UniversalViewSet(ListModelMixin, CreateModelMixin, DestroyModelMixin,
+                       viewsets.GenericViewSet):
+    pass
+
+
+class CategoryViewSets(UniversalViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (AdminOrGetList,)
@@ -45,21 +52,6 @@ class CategoryViewSets(viewsets.ModelViewSet, mixins.RetrieveModelMixin):
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
-
-    def retrieve(self, request, *args, **kwargs):
-        if request.method == 'GET':
-            msg = {"error": f'Метод {request.method} не доступен.'}
-            return Response(
-                data=msg, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        return super().update(request, *args, **kwargs)
-
-    def update(self, request, *args, **kwargs):
-        if request.method == 'PATCH':
-            msg = {"error": f'Метод {request.method} не доступен.'}
-            return Response(
-                data=msg, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        return super().update(request, *args, **kwargs)
-
 
 class TitleViewSets(viewsets.ModelViewSet):
     queryset = Title.objects.all()
@@ -89,6 +81,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (IsAuthorModeratorAdminOrReadOnly,)
+    permission_classes = (IsAuthorModeratorAdminOrReadOnly,)
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
@@ -102,7 +95,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, review=review, title=title)
 
 
-class GenreViewSets(viewsets.ModelViewSet, mixins.RetrieveModelMixin):
+class GenreViewSets(UniversalViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     queryset = Genre.objects.all()
@@ -111,20 +104,6 @@ class GenreViewSets(viewsets.ModelViewSet, mixins.RetrieveModelMixin):
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
-
-    def retrieve(self, request, *args, **kwargs):
-        if request.method == 'GET':
-            msg = {"error": f'Метод {request.method} не доступен.'}
-            return Response(
-                data=msg, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        return super().update(request, *args, **kwargs)
-
-    def update(self, request, *args, **kwargs):
-        if request.method == 'PATCH':
-            msg = {"error": f'Метод {request.method} не доступен.'}
-            return Response(
-                data=msg, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        return super().update(request, *args, **kwargs)
 
 
 class UserViewSet(viewsets.ModelViewSet):
