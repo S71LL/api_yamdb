@@ -1,5 +1,7 @@
 from rest_framework import permissions
 
+from users.models import User
+
 
 class IsAuthorModeratorAdminOrReadOnly(permissions.BasePermission):
     """
@@ -16,8 +18,8 @@ class IsAuthorModeratorAdminOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return (obj.author == request.user
-                or request.user.role == 'admin'
-                or request.user.role == 'moderator')
+                or request.user.role == User.UserRoles.ADMIN
+                or request.user.role == User.UserRoles.MODERATOR)
 
 
 class IsAdmin(permissions.BasePermission):
@@ -31,26 +33,26 @@ class IsAdmin(permissions.BasePermission):
         return (
             request.user.is_authenticated
             and (request.user.is_superuser
-                 or request.user.role == 'admin')
+                 or request.user.role == User.UserRoles.ADMIN)
         )
 
     def has_object_permission(self, request, view, obj):
         return (
             request.user.is_authenticated
             and (request.user.is_superuser
-                 or request.user.role == 'admin')
+                 or request.user.role == User.UserRoles.ADMIN)
         )
 
 
 class IsAdminOrGetList(permissions.BasePermission):
     def has_permission(self, request, view):
-        if view.action == 'list':
+        if view.action in 'list':
             return True
         if view.action == 'create' or 'destroy':
             return (
                 request.user.is_authenticated
                 and (request.user.is_superuser
-                     or request.user.role == 'admin')
+                     or request.user.role == User.UserRoles.ADMIN)
             )
 
     def has_object_permission(self, request, view, obj):
@@ -59,7 +61,7 @@ class IsAdminOrGetList(permissions.BasePermission):
         return (
             request.user.is_authenticated
             and (request.user.is_superuser
-                 or request.user.role == 'admin')
+                 or request.user.role == User.UserRoles.ADMIN)
         )
 
 
@@ -73,7 +75,7 @@ class IsAdminOrRead(permissions.BasePermission):
             return (
                 request.user.is_authenticated
                 and (request.user.is_superuser
-                     or request.user.role == 'admin')
+                     or request.user.role == User.UserRoles.ADMIN)
             )
 
     def has_object_permission(self, request, view, obj):
@@ -82,5 +84,5 @@ class IsAdminOrRead(permissions.BasePermission):
         return (
             request.user.is_authenticated
             and (request.user.is_superuser
-                 or request.user.role == 'admin')
+                 or request.user.role == User.UserRoles.ADMIN)
         )
