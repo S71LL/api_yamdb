@@ -161,7 +161,7 @@ def token_obtain(request):
             'username':
             'Поле username обязательно для заполнения',
             'confirmation_code':
-            'Поле confirmation code обязательно для заполнения.'} 
+            'Поле confirmation code обязательно для заполнения.'}
         return Response(data=msg, status=status.HTTP_400_BAD_REQUEST)
     user = get_object_or_404(User, username=username)
     if not default_token_generator.check_token(user, confirmation_code):

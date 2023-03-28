@@ -46,18 +46,17 @@ class IsAdmin(permissions.BasePermission):
 
 class IsAdminOrGetList(permissions.BasePermission):
     def has_permission(self, request, view):
-        if view.action in 'list':
+        if request.method in permissions.SAFE_METHODS:
             return True
-        if view.action == 'create' or 'destroy':
-            return (
-                request.user.is_authenticated
-                and (request.user.is_superuser
-                     or request.user.role == User.UserRoles.ADMIN)
-            )
+        return (
+            request.user.is_authenticated
+            and (request.user.is_superuser
+                 or request.user.role == User.UserRoles.ADMIN)
+        )
 
     def has_object_permission(self, request, view, obj):
-        if view.action == 'retrieve':
-            return False
+        if request.method in permissions.SAFE_METHODS:
+            return True
         return (
             request.user.is_authenticated
             and (request.user.is_superuser
@@ -67,19 +66,16 @@ class IsAdminOrGetList(permissions.BasePermission):
 
 class IsAdminOrRead(permissions.BasePermission):
     def has_permission(self, request, view):
-        if view.action == 'list':
+        if request.method in permissions.SAFE_METHODS:
             return True
-        if view.action == 'retrieve':
-            return True
-        if view.action == 'create' or 'destroy' or 'update':
-            return (
-                request.user.is_authenticated
-                and (request.user.is_superuser
-                     or request.user.role == User.UserRoles.ADMIN)
-            )
+        return (
+            request.user.is_authenticated
+            and (request.user.is_superuser
+                 or request.user.role == User.UserRoles.ADMIN)
+        )
 
     def has_object_permission(self, request, view, obj):
-        if view.action == 'retrieve':
+        if request.method in permissions.SAFE_METHODS:
             return True
         return (
             request.user.is_authenticated

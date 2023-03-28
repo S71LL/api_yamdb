@@ -1,7 +1,6 @@
 import re
 from datetime import datetime
 
-from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db.models import Avg
@@ -9,7 +8,6 @@ from django.contrib.auth.tokens import default_token_generator
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField, PrimaryKeyRelatedField
 from rest_framework.serializers import HiddenField
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Category, Comment, Genre, Review, Title, TitleGenre
 from users.models import User
@@ -62,9 +60,6 @@ class TitleSerializer(serializers.ModelSerializer):
         )
 
     def get_rating(self, obj):
-        title = Title.objects.get(id=obj.id)
-        score = title.reviews.all().aggregate(Avg('score'))
-        return score['score__avg']
         title = Title.objects.get(id=obj.id)
         score = title.reviews.all().aggregate(Avg('score'))
         return score['score__avg']
