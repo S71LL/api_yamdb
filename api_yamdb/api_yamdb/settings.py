@@ -60,6 +60,7 @@ TEMPLATES = [
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = BASE_DIR / 'static/emails'
+DEFAULT_FROM_EMAIL = 'example@mail.ru'
 
 WSGI_APPLICATION = 'api_yamdb.wsgi.application'
 
