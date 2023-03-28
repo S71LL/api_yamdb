@@ -5,6 +5,11 @@ from django.utils.translation import gettext_lazy as _
 
 
 class User(AbstractUser):
+    class UserRoles(models.TextChoices):
+        ADMIN = 'admin', _('Admin')
+        MODERATOR = 'moderator', _('Moderator')
+        USER = 'user', _('User')
+
     username = models.CharField(
         'Username',
         max_length=150,
@@ -30,12 +35,6 @@ class User(AbstractUser):
         'Biography',
         blank=True
     )
-
-    class UserRoles(models.TextChoices):
-        ADMIN = 'admin', _('Admin')
-        MODERATOR = 'moderator', _('Moderator')
-        USER = 'user', _('User')
-
     role = models.CharField(
         'Role',
         max_length=9,
@@ -47,6 +46,11 @@ class User(AbstractUser):
         max_length=100,
         blank=True
     )
+    token = models.CharField(
+        'Token',
+        max_length=254,
+        blank=True
+    )
 
     class Meta:
         verbose_name = 'User'
@@ -54,21 +58,3 @@ class User(AbstractUser):
 
     def __str__(self):
         return f'{self.role} {self.username}'
-
-
-class JWTToken(models.Model):
-    key = models.CharField('Token', max_length=100, unique=True)
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        verbose_name='User',
-        related_name='token'
-    )
-    created = models.DateTimeField('CreationTime', auto_now_add=True)
-
-    class Meta:
-        verbose_name = 'Token'
-        verbose_name_plural = 'Tokens'
-
-    def __str__(self):
-        return f'Token for {self.user.username}'

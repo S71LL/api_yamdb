@@ -1,11 +1,15 @@
 import re
 from datetime import datetime
 
-from rest_framework import serializers
+from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
 from django.db.models import Avg
+from django.contrib.auth.tokens import default_token_generator
+from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField, PrimaryKeyRelatedField
 from rest_framework.serializers import HiddenField
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from users.models import User
 from reviews.models import Review, Comment, Title, Category, Genre, TitleGenre
@@ -15,7 +19,6 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ('name', 'slug')
         fields = ('name', 'slug')
 
 
@@ -59,11 +62,9 @@ class TitleSerializer(serializers.ModelSerializer):
         )
 
     def get_rating(self, obj):
-        if Review.objects.filter(title_id=obj.id).exists():
-            score = Review.objects.filter(
-                title_id=obj.id).aggregate(Avg('score'))
-            return score['score__avg']
-        return None
+        title = Title.objects.get(id=obj.id)
+        score = title.reviews.all().aggregate(Avg('score'))
+        return score['score__avg']
 
     def validate(self, data):
         if not data.get('year'):
@@ -76,12 +77,18 @@ class TitleSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         genres = validated_data.pop('genre')
         title = Title.objects.create(**validated_data)
-        for genre in genres:
-            TitleGenre.objects.create(title=title, genre=genre)
+        title_genre_objs = [
+            TitleGenre(title=title, genre=genre) for genre in genres]
+        TitleGenre.objects.bulk_create(title_genre_objs)
         return title
 
 
 class SignupSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('username', 'email')
+
     def validate(self, data):
         username = data['username']
         prog = re.compile(r'^[\w.@+-]+\Z', re.ASCII)
@@ -95,20 +102,41 @@ class SignupSerializer(serializers.ModelSerializer):
                 'Придумай другое имя пользователя, это уже занято.')
         return data
 
-    class Meta:
-        model = User
-        fields = ('username', 'email')
+    def create(self, validated_data):
+        username = validated_data.get('username')
+        to_email = validated_data.get('email')
+        user = User.objects.create(username=username, email=to_email)
+        code = default_token_generator.make_token(user)
+        msg = ('Привет! Воспользуйся, пожалуйста, '
+               f'этим кодом для получения токена {code}')
+        send_mail(
+            subject='Код-подтверждение',
+            message=msg,
+            recipient_list=[to_email],
+            from_email=None,
+            fail_silently=False
+        )
+        user.confirmation_code = code
+        return user
 
-
-class UserTokenSerializer(serializers.ModelSerializer):
-    token = serializers.SlugRelatedField(
-        slug_field='key',
-        read_only=True
-    )
-
-    class Meta:
-        model = User
-        fields = ('token',)
+    def update(self, instance, validated_data):
+        to_email = validated_data.get('email')
+        if instance.email != to_email:
+            raise serializers.ValidationError(
+                'Введен неверный адрес электронной почты.')
+        code = default_token_generator.make_token(instance)
+        msg = ('Привет! Воспользуйся, пожалуйста, '
+               f'этим кодом для получения токена {code}')
+        send_mail(
+            subject='Код-подтверждение',
+            message=msg,
+            recipient_list=[to_email],
+            from_email=None,
+            fail_silently=False
+        )
+        instance.confirmation_code = code
+        instance.save()
+        return instance
 
 
 class AdminUserSerializer(serializers.ModelSerializer):

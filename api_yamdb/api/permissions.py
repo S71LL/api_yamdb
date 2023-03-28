@@ -1,7 +1,7 @@
 from rest_framework import permissions
 
 
-class AuthorModeratorAdminOrReadOnly(permissions.BasePermission):
+class IsAuthorModeratorAdminOrReadOnly(permissions.BasePermission):
     """
     Автор объекта - может редактировать и удалять свои отзывы и комментарии,
     редактировать свои оценки произведений.
@@ -42,7 +42,7 @@ class IsAdmin(permissions.BasePermission):
         )
 
 
-class AdminOrGetList(permissions.BasePermission):
+class IsAdminOrGetList(permissions.BasePermission):
     def has_permission(self, request, view):
         if view.action == 'list':
             return True
@@ -63,7 +63,7 @@ class AdminOrGetList(permissions.BasePermission):
         )
 
 
-class AdminOrRead(permissions.BasePermission):
+class IsAdminOrRead(permissions.BasePermission):
     def has_permission(self, request, view):
         if view.action == 'list':
             return True

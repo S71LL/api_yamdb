@@ -1,23 +1,16 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import User, JWTToken
-
-
-class JWTTokenInline(admin.StackedInline):
-    model = JWTToken
-    can_delete = False
-    verbose_name_plural = 'Tokens'
+from .models import User
 
 
 class UserAdmin(BaseUserAdmin):
     fieldsets = BaseUserAdmin.fieldsets + (
-        (None, {'fields': ('bio', 'role')}),
+        (None, {'fields': ('bio', 'role', 'token')}),
     )
     add_fieldsets = BaseUserAdmin.add_fieldsets + (
-        (None, {'fields': ('bio', 'role')}),
+        (None, {'fields': ('bio', 'role', 'token')}),
     )
-    inlines = (JWTTokenInline,)
 
 
 admin.site.register(User, UserAdmin)
