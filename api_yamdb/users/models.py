@@ -14,7 +14,8 @@ class User(AbstractUser):
         'Username',
         max_length=150,
         unique=True,
-        validators=[ASCIIUsernameValidator]
+        validators=[ASCIIUsernameValidator],
+        db_index=True
     )
     email = models.EmailField(
         'E-mail',
