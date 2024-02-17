@@ -1,5 +1,5 @@
 from django.urls import include, path
-from rest_framework.routers import SimpleRouter
+from rest_framework import routers
 
 from .views import (
     ReviewViewSet, UserViewSet, GenreViewSets,
@@ -8,7 +8,7 @@ from .views import (
 
 name = 'api'
 
-router = SimpleRouter()
+router = routers.DefaultRouter()
 
 router.register(r'users', UserViewSet)
 router.register(r'titles/(?P<title_id>\d+)/reviews',
