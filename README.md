@@ -4,7 +4,7 @@
 
 Выполнял роль тимлида комманды. Также моя часть проекта заключалась в реализации рецензий, комментариев и оценок пользователей
 
-Авторы проекта: Кирилл[https://github.com/S71LL], Максим[https://github.com/makskhaliosa], Никита[https://github.com/mazazyrik]
+Авторы проекта: [Кирилл](https://github.com/S71LL), [Максим](https://github.com/makskhaliosa), [Никита](https://github.com/mazazyrik)
 
 ## Как запустить проект:
 
